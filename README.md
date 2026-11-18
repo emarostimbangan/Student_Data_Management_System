@@ -21,3 +21,6 @@ A modular, heavily documented command-line **Student Data Management System** bu
 1. Populate sample records: `python3 seed.py`
 2. Run automated tests: `python3 -m unittest discover -s tests -v`
 3. Launch the CLI application: `python3 main.py`
+
+## Collaborator Contributions
+- **shiellamari22-cell** (`shiellamari22@gmail.com`) — Course-level grade distribution, pass/fail analytics (`src/course_stats.py`), CLI reporting option 12, and dedicated course statistics unit tests (`tests/test_course_stats.py`).

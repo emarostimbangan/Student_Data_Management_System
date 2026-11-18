@@ -1,30 +1,39 @@
 """
 SQLite Database Connection and Relational Schema Initialization.
 
-Defines three normalized tables:
-1. users       - Registrar/admin and faculty user accounts.
-2. students    - Master academic records (student number, name, program, year level).
-3. enrollments - Subject enrollment and grade records linked via foreign key.
+Establishes a normalized three-table SQLite database for managing student
+academic records, staff authentication, and course enrollments with strict
+foreign-key integrity.
 """
 
 import sqlite3
 
+# Local SQLite database filename stored in the project root
 DB_NAME = "student_management.db"
 
 
 def get_connection() -> sqlite3.Connection:
-    """Create and return a SQLite connection with row factory and foreign keys enabled."""
+    """
+    Open a SQLite connection with dictionary-style row access and foreign keys enabled.
+
+    Returns:
+        sqlite3.Connection: Active database connection object.
+    """
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
+    # Enforce ON DELETE CASCADE and foreign-key constraints on every connection
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
 
 def init_db() -> None:
-    """Initialize all required database tables if they do not already exist."""
+    """
+    Create the users, students, and enrollments tables if they do not exist.
+    """
     conn = get_connection()
     cursor = conn.cursor()
 
+    # Table 1: Staff and registrar user accounts with role-based permissions
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS users (
@@ -36,6 +45,7 @@ def init_db() -> None:
         """
     )
 
+    # Table 2: Master student profile directory
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS students (
@@ -50,6 +60,7 @@ def init_db() -> None:
         """
     )
 
+    # Table 3: Subject enrollments and numerical grades linked to students
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS enrollments (

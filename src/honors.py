@@ -9,6 +9,11 @@ and probationary standing.
 from src.students import list_students
 from src.enrollments import get_student_transcript
 
+# Maximum GWA threshold required to qualify for the Dean's List
+DEANS_LIST_CUTOFF = 1.75
+# Maximum GWA threshold for good academic standing before probation
+GOOD_STANDING_CUTOFF = 3.00
+
 
 def classify_standing(gwa: float | None) -> str:
     """
@@ -22,28 +27,31 @@ def classify_standing(gwa: float | None) -> str:
     """
     if gwa is None:
         return "No Grades Yet"
-    if gwa <= 1.75:
+    if gwa <= DEANS_LIST_CUTOFF:
         return "Dean's Lister"
-    if gwa <= 3.00:
+    if gwa <= GOOD_STANDING_CUTOFF:
         return "Good Standing"
     return "Academic Probation"
 
 
 def get_deans_list() -> list[dict]:
     """
-    Scan all active students and return those qualifying for the Dean's List (GWA <= 1.75).
+    Scan all active students and return those qualifying for the Dean's List.
 
     Returns:
-        list[dict]: Qualified student records with their computed GWA and standing.
+        list[dict]: Qualified student records sorted from best (lowest) GWA to highest.
     """
     honors = []
     for student in list_students():
-        # Only active students with graded coursework are eligible
+        # Exclude inactive or already-graduated students from active semester honors
         if student["status"] != "active":
             continue
+
         transcript = get_student_transcript(student["student_id"])
         gwa = transcript.get("gwa")
-        if gwa is not None and gwa <= 1.75:
+
+        # Include students whose graded coursework meets the Dean's List cutoff
+        if gwa is not None and gwa <= DEANS_LIST_CUTOFF:
             honors.append(
                 {
                     "student_id": student["student_id"],
@@ -54,6 +62,7 @@ def get_deans_list() -> list[dict]:
                     "standing": classify_standing(gwa),
                 }
             )
-    # Sort honorees from lowest (best) GWA to highest
+
+    # Rank honorees from lowest numerical GWA (1.00) upward
     honors.sort(key=lambda item: item["gwa"])
     return honors

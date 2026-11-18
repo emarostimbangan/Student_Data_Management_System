@@ -1,29 +1,64 @@
-"""Automated Unit Tests for the Student Data Management System."""
-import os, unittest
+"""
+Comprehensive Unit Test Suite for the Student Data Management System.
+
+Tests authentication, student CRUD operations, course enrollment, grade encoding,
+GWA transcript calculation, academic analytics, and CSV export functionality.
+"""
+
+import os
+import unittest
 import src.database as db
 from src.auth import register_user, login_user
-from src.students import add_student, search_students
+from src.students import add_student, search_students, update_student_status, delete_student
 from src.enrollments import enroll_course, record_grade, get_student_transcript
+from src.analytics import get_academic_summary, get_program_distribution
+from src.exporter import validate_student_number, export_directory_csv
 
 
 class TestStudentSystem(unittest.TestCase):
-    def setUp(self):
+    """End-to-end verification of all system modules."""
+
+    def setUp(self) -> None:
         self.test_db = "test_mgmt.db"
-        if os.path.exists(self.test_db): os.remove(self.test_db)
+        self.test_csv = "test_export.csv"
+        for f in (self.test_db, self.test_csv):
+            if os.path.exists(f):
+                os.remove(f)
         db.DB_NAME = self.test_db
         db.init_db()
 
-    def tearDown(self):
-        if os.path.exists(self.test_db): os.remove(self.test_db)
+    def tearDown(self) -> None:
+        for f in (self.test_db, self.test_csv):
+            if os.path.exists(f):
+                os.remove(f)
 
-    def test_lifecycle(self):
+    def test_full_academic_workflow(self) -> None:
+        # 1. Authentication
         self.assertTrue(register_user("admin1", "pass123", "admin"))
         self.assertIsNotNone(login_user("admin1", "pass123"))
+
+        # 2. Validation & Student Creation
+        self.assertTrue(validate_student_number("2026-9999"))
+        self.assertFalse(validate_student_number("ABC-12"))
         self.assertTrue(add_student("2026-9999", "Maria Clara", "BSCS", 2, "maria@edu.ph"))
         sid = search_students("Maria")[0]["student_id"]
+
+        # 3. Enrollment, Grading & GWA Calculation
         self.assertTrue(enroll_course(sid, "CS201", "OOP", 3, "1st Sem"))
+        self.assertTrue(enroll_course(sid, "CS202", "DBMS", 3, "1st Sem"))
         self.assertTrue(record_grade(1, 1.50))
-        self.assertEqual(get_student_transcript(sid)["gwa"], 1.50)
+        self.assertTrue(record_grade(2, 2.00))
+        self.assertEqual(get_student_transcript(sid)["gwa"], 1.75)
+
+        # 4. Analytics, CSV Export & Status Update
+        self.assertEqual(export_directory_csv(self.test_csv), 1)
+        self.assertTrue(update_student_status(sid, 3, "graduated"))
+        self.assertEqual(get_academic_summary()["graduated_students"], 1)
+        self.assertEqual(len(get_program_distribution()), 1)
+
+        # 5. Cascade Deletion
+        self.assertTrue(delete_student(sid))
+        self.assertEqual(get_academic_summary()["total_students"], 0)
 
 
 if __name__ == "__main__":

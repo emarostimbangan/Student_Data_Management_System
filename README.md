@@ -1,18 +1,21 @@
 # Student Data Management System
 
-A modular command-line **Student Data Management System** built with **Python** and **SQLite**.
+A modular, heavily documented command-line **Student Data Management System** built with **Python** and **SQLite**.
 
 ## Author
 - **emarostimbangan** (`emarostimbangan326@gmail.com`)
 
-## Key Features
-- **Role-Based Authentication (`src/auth.py`)**: SHA-256 password hashing supporting `admin` (Registrar) and `faculty` roles.
-- **Relational SQLite Schema (`src/database.py`)**: Three normalized tables (`users`, `students`, `enrollments`) with `ON DELETE CASCADE` foreign-key constraints.
-- **Student Directory CRUD (`src/students.py`)**: Register students, list profiles, search by ID/name/program, update year/status, and remove records.
-- **Course Enrollment & GWA Engine (`src/enrollments.py`)**: Enroll students in subjects, encode numerical grades (`1.00–5.00`), and compute unit-weighted General Weighted Averages.
-- **Academic Analytics (`src/analytics.py`)**: Generates institutional student counts, active/graduated breakdowns, average grades, and degree program distributions.
-- **CSV Export & Validation (`src/exporter.py`)**: Validates `YYYY-NNNN` student numbers and exports the student directory to CSV.
-- **Sample Seeder & Automated Tests (`seed.py`, `tests/test_system.py`)**: Populates realistic demo records and verifies every module via `unittest`.
+## Project Architecture
+- `main.py` — Interactive terminal CLI menu and role-based session controller
+- `seed.py` — Sample database seeder with realistic student and enrollment records
+- `src/database.py` — SQLite connection helper and 3-table relational schema (`users`, `students`, `enrollments`)
+- `src/auth.py` — SHA-256 credential hashing and role-based login (`admin`, `faculty`)
+- `src/students.py` — Student master directory CRUD and keyword search
+- `src/enrollments.py` — Subject enrollment, grade encoding (`1.00–5.00`), and unit-weighted GWA calculator
+- `src/honors.py` — Dean's List qualification (`GWA <= 1.75`) and academic standing classifier
+- `src/analytics.py` — Institutional student headcount, average grade, and program distribution analytics
+- `src/exporter.py` — `YYYY-NNNN` student-number format validator and CSV directory exporter
+- `tests/test_system.py` — Automated end-to-end `unittest` test suite
 
 ## How to Run
 1. Populate sample records: `python3 seed.py`

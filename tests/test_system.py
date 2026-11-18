@@ -1,8 +1,9 @@
 """
 Comprehensive Unit Test Suite for the Student Data Management System.
 
-Verifies authentication, student CRUD, course enrollment, grade encoding,
-GWA transcript calculation, Dean's List classification, analytics, and CSV export.
+Verifies authentication, input validators, student CRUD, course enrollment,
+grade encoding, GWA transcript calculation, Dean's List classification,
+institutional analytics, and CSV export.
 """
 
 import os
@@ -14,6 +15,7 @@ from src.enrollments import enroll_course, record_grade, get_student_transcript
 from src.analytics import get_academic_summary, get_program_distribution
 from src.exporter import validate_student_number, export_directory_csv
 from src.honors import classify_standing, get_deans_list
+from src.validators import is_valid_email, is_valid_grade, is_valid_year_level
 
 
 class TestStudentSystem(unittest.TestCase):
@@ -32,6 +34,14 @@ class TestStudentSystem(unittest.TestCase):
         for f in (self.test_db, self.test_csv):
             if os.path.exists(f):
                 os.remove(f)
+
+    def test_validators(self) -> None:
+        self.assertTrue(is_valid_email("student@norsu.edu.ph"))
+        self.assertFalse(is_valid_email("invalid-email"))
+        self.assertTrue(is_valid_grade(1.25))
+        self.assertFalse(is_valid_grade(6.00))
+        self.assertTrue(is_valid_year_level(3))
+        self.assertFalse(is_valid_year_level(0))
 
     def test_full_academic_workflow(self) -> None:
         self.assertTrue(register_user("admin1", "pass123", "admin"))

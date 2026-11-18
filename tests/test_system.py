@@ -1,8 +1,8 @@
 """
 Comprehensive Unit Test Suite for the Student Data Management System.
 
-Tests authentication, student CRUD operations, course enrollment, grade encoding,
-GWA transcript calculation, academic analytics, and CSV export functionality.
+Verifies authentication, student CRUD, course enrollment, grade encoding,
+GWA transcript calculation, Dean's List classification, analytics, and CSV export.
 """
 
 import os
@@ -13,6 +13,7 @@ from src.students import add_student, search_students, update_student_status, de
 from src.enrollments import enroll_course, record_grade, get_student_transcript
 from src.analytics import get_academic_summary, get_program_distribution
 from src.exporter import validate_student_number, export_directory_csv
+from src.honors import classify_standing, get_deans_list
 
 
 class TestStudentSystem(unittest.TestCase):
@@ -33,30 +34,29 @@ class TestStudentSystem(unittest.TestCase):
                 os.remove(f)
 
     def test_full_academic_workflow(self) -> None:
-        # 1. Authentication
         self.assertTrue(register_user("admin1", "pass123", "admin"))
         self.assertIsNotNone(login_user("admin1", "pass123"))
 
-        # 2. Validation & Student Creation
         self.assertTrue(validate_student_number("2026-9999"))
         self.assertFalse(validate_student_number("ABC-12"))
         self.assertTrue(add_student("2026-9999", "Maria Clara", "BSCS", 2, "maria@edu.ph"))
         sid = search_students("Maria")[0]["student_id"]
 
-        # 3. Enrollment, Grading & GWA Calculation
         self.assertTrue(enroll_course(sid, "CS201", "OOP", 3, "1st Sem"))
         self.assertTrue(enroll_course(sid, "CS202", "DBMS", 3, "1st Sem"))
         self.assertTrue(record_grade(1, 1.50))
-        self.assertTrue(record_grade(2, 2.00))
-        self.assertEqual(get_student_transcript(sid)["gwa"], 1.75)
+        self.assertTrue(record_grade(2, 1.75))
 
-        # 4. Analytics, CSV Export & Status Update
+        transcript = get_student_transcript(sid)
+        self.assertEqual(transcript["gwa"], 1.62)
+        self.assertEqual(classify_standing(transcript["gwa"]), "Dean's Lister")
+        self.assertEqual(len(get_deans_list()), 1)
+
         self.assertEqual(export_directory_csv(self.test_csv), 1)
         self.assertTrue(update_student_status(sid, 3, "graduated"))
         self.assertEqual(get_academic_summary()["graduated_students"], 1)
         self.assertEqual(len(get_program_distribution()), 1)
 
-        # 5. Cascade Deletion
         self.assertTrue(delete_student(sid))
         self.assertEqual(get_academic_summary()["total_students"], 0)
 

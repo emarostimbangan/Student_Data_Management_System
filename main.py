@@ -3,7 +3,8 @@ Command-Line Interface (CLI) Entry Point for the Student Data Management System.
 
 Provides an interactive menu-driven terminal interface for student directory
 management, course enrollment, grade encoding, transcript GWA viewing,
-Dean's List qualification reports, CSV exports, and institutional analytics.
+Dean's List qualification reports, course grade summaries, CSV exports,
+and institutional analytics.
 """
 
 from src.database import init_db
@@ -13,6 +14,7 @@ from src.enrollments import enroll_course, record_grade, get_student_transcript
 from src.analytics import get_academic_summary, get_program_distribution
 from src.honors import classify_standing, get_deans_list
 from src.exporter import validate_student_number, export_directory_csv
+from src.course_stats import get_course_performance
 
 
 def run_cli() -> None:
@@ -39,7 +41,7 @@ def run_cli() -> None:
                 print(f"\n--- {user['username']} ({user['role'].upper()}) ---")
                 print("1. View All Students\n2. Search Students\n3. Add Student\n4. Enroll Subject\n5. Encode Grade\n6. View Transcript & Standing\n7. View Dean's List")
                 if user["role"] == "admin":
-                    print("8. Update Student Status (Admin)\n9. Delete Student (Admin)\n10. Academic Analytics (Admin)\n11. Export Directory to CSV (Admin)")
+                    print("8. Update Student Status (Admin)\n9. Delete Student (Admin)\n10. Academic Analytics (Admin)\n11. Export Directory to CSV (Admin)\n12. Course Grade Summary (Admin)")
                 print("0. Logout")
                 opt = input("Option: ").strip()
 
@@ -86,6 +88,10 @@ def run_cli() -> None:
                 elif opt == "11" and user["role"] == "admin":
                     count = export_directory_csv()
                     print(f"Exported {count} student record(s) to students_export.csv!")
+                elif opt == "12" and user["role"] == "admin":
+                    print("\n--- COURSE PERFORMANCE SUMMARY ---")
+                    for c in get_course_performance():
+                        print(f"  {c['course_code']} ({c['course_title']}) | Enrolled: {c['total_enrolled']} | Avg: {c['avg_grade']} | Passed: {c['passed_count']} | Failed: {c['failed_count']}")
                 elif opt == "0":
                     break
         elif choice == "3":
